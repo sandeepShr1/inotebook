@@ -36,7 +36,7 @@ const NoteState = (props) => {
     }
 
     // Get all notes
-    const getNote = async () => {
+    const getNotes = async () => {
 
         // API call
         const url = `${host}/api/notes/fetchallnotes`
@@ -54,8 +54,17 @@ const NoteState = (props) => {
 
 
     // Delete a note
-    const deleteNote = (id) => {
-        console.log("delete a note+", id);
+    const deleteNote = async (id) => {
+        const url = `${host}/api/notes/deletenote/${id}`
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                "auth-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjE1MzJiYmQ1MzI2YjhiYTAyMDZmMzIxIn0sImlhdCI6MTYzMjk5NzQzM30.8i9zM74Lkzix7A81q3lcxb5li1LP4PTlsuDtS_dV6mM"
+            }
+        });
+        const json = response.json();
+        console.log(json);
         const newNotes = notes.filter((note) => { return note._id !== id })
         setNotes(newNotes);
     }
@@ -74,22 +83,23 @@ const NoteState = (props) => {
         });
         const json = response.json();
 
-
+        let newNotes = JSON.parse(JSON.stringify(notes))
         // logic to edit 
-        for (let index = 0; index < notes.length; index++) {
-            const element = notes[index];
+        for (let index = 0; index < newNotes.length; index++) {
+            const element = newNotes[index];
             if (element._id === id) {
-                element.title = title;
-                element.description = description;
-                element.tag = tag;
+                newNotes[index].title = title;
+                newNotes[index].description = description;
+                newNotes[index].tag = tag;
+                break;
             }
-
         }
+        setNotes(newNotes);
 
     }
 
     return (
-        <NoteContext.Provider value={{ notes, addNote, editNote, deleteNote, getNote }}>
+        <NoteContext.Provider value={{ notes, addNote, editNote, deleteNote, getNotes }}>
             {props.children}
         </NoteContext.Provider>
     )
