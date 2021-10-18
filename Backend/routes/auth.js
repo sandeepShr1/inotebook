@@ -14,16 +14,17 @@ router.post('/createuser', [
    body('name', 'Enter valid name!').isLength({ min: 5 })
 
 ], async (req, res) => {
+   let success = false
    // Finds the validation errors in this request and wraps them in an object with handy functions
    const errors = validationResult(req);
    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ success, errors: errors.array() });
    }
    try {
       // Check whether user exist already!
       let user = await User.findOne({ email: req.body.email });
       if (user) {
-         return res.status(400).json({ error: "User already exist!" });
+         return res.status(400).json({success, error: "User already exist!" });
       }
       const salt = await bcrypt.genSalt(10);
       secPass = await bcrypt.hash(req.body.password, salt);
@@ -40,12 +41,12 @@ router.post('/createuser', [
          }
       }
       const authToken = jwt.sign(data, JWT_SECRET);
-      console.log(authToken)
-      res.json(authToken)
+      success =true;
+      res.json({success, authToken})
    }
    catch (error) {
       console.log(error.message);
-      res.status(500).send("Something went wrong!")
+      res.status(500).send( "Something went wrong!")
    }
 })
 
@@ -55,21 +56,24 @@ router.post('/login', [
    body('password', 'Password cannot be empty!').exists(),
 ], async (req, res) => {
    // Finds the validation errors in this request and wraps them in an object with handy functions
+   let success= false
    const errors = validationResult(req);
    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({success, errors: errors.array() });
    }
 
    const { email, password } = req.body;
    try {
       let user = await User.findOne({ email });
       if (!user) {
-         return res.status(400).json({ error: "Please enter valid email!" });
+         
+         return res.status(400).json({success,  error: "Please enter valid email!" });
       }
 
       const passwordCompare = await bcrypt.compare(password, user.password);
       if (!passwordCompare) {
-         return res.status(400).json({ error: "Please enter valid email/password!" });
+         
+         return res.status(400).json({ success, error: "Please enter valid email/password!" });
       }
 
       const data = {
@@ -78,7 +82,8 @@ router.post('/login', [
          }
       }
       const authToken = jwt.sign(data, JWT_SECRET);
-      res.json(authToken)
+      success = true
+      res.json({success, authToken})
    } catch (error) {
       console.log(error.message);
       res.status(500).send("Something went wrong!")

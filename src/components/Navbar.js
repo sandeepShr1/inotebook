@@ -1,10 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useHistory } from 'react-router-dom';
 
 
 const Navbar = (props) => {
     let location = useLocation();
+    let history = useHistory();
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        history.push('/login');
+    }
 
     return (
         <nav className={`navbar navbar-expand-lg navbar-dark bg-dark`}>
@@ -22,6 +28,10 @@ const Navbar = (props) => {
                             <Link className={`nav-link ${location.pathname === "/about" ? "active" : ""}`} to="/about">About</Link>
                         </li>
                     </ul>
+                    {!localStorage.getItem('token') ? <form className="d-flex">
+                        <Link className="btn btn-primary " to="/login" role="button">Login</Link>
+                        <Link className="btn btn-primary mx-2" to="/register" role="button">Register</Link>
+                    </form> : <button className="btn btn-primary " onClick={handleLogout} >Log out</button>}
                 </div>
             </div>
         </nav>
